@@ -1,7 +1,5 @@
 import asyncio
-import csv
 import os
-import re
 import sqlite3
 
 from playwright.async_api import async_playwright
