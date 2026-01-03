@@ -5,7 +5,6 @@ from typing import Optional
 import aiohttp
 from selectolax.parser import HTMLParser
 
-
 HEADERS = {
     "User-Agent": "Mozilla/5.0",
 }
@@ -21,7 +20,6 @@ def clean_film_url(raw_href: Optional[str]) -> Optional[str]:
     if not raw_href or "/film/" not in raw_href:
         return None
     return raw_href[raw_href.find("/film/") :]
-
 
 
 async def fetch(session: aiohttp.ClientSession, url: str) -> Optional[str]:
@@ -60,12 +58,11 @@ def parse_review(html: str) -> Optional[str]:
     return re.sub(r"^\s+", "", text)
 
 
-async def scrape_user(session,  user_id: str, page):
+async def scrape_user(session, user_id: str, page):
     datas = []
 
     diary_url = f"https://letterboxd.com{user_id}diary/films/page/{page}/"
 
-        
     html = await fetch(session, diary_url)
 
     if not html:
@@ -84,20 +81,17 @@ async def scrape_user(session,  user_id: str, page):
             if review_html:
                 review_text = parse_review(review_html)
 
-        
         data = {
-                "user_id": user_id,
-                "film_id": film_id,
-                "rating": convert_stars_to_number(entry["rating"]),
-                "liked": entry["liked"],
-                "review": review_text,
-            }
+            "user_id": user_id,
+            "film_id": film_id,
+            "rating": convert_stars_to_number(entry["rating"]),
+            "liked": entry["liked"],
+            "review": review_text,
+        }
         datas.append(data)
     return datas
-        
-        
 
-async def get_user_diary_page(user_id: str, page: int):
-    async with aiohttp.ClientSession(headers=HEADERS) as session:
-        user_id = f"/{user_id}/"
-        return await scrape_user(session, user_id, page)
+
+async def get_user_diary_page(session: aiohttp.ClientSession, user_id: str, page: int):
+    formatted_uid = f"/{user_id}/"
+    return await scrape_user(session, formatted_uid, page)
