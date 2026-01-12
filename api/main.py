@@ -11,6 +11,7 @@ from src.recomender import (
     get_ranked_by_seeds_cached,
     get_ranked_cached,
 )
+from src.search import get_film_by_name
 from src.users import get_user_diary_page
 
 app = Flask(__name__)
@@ -103,10 +104,10 @@ async def get_recommend_user(user_id):
     return jsonify(data)
 
 
-@app.route("/recommend/seed", methods=["GET"])
+@app.route("/recommend/seed", methods=["POST"])
 async def get_recommend_seed():
     """
-    Get recommendations based on seed films
+    POST recommendations based on seed films
     ---
     tags:
       - Recommendations
@@ -166,6 +167,38 @@ async def get_list():
     list_id = "/".join(list_id)
 
     data = await fetch_list(f"https://letterboxd.com/{list_id}")
+    return jsonify(data)
+
+
+@app.route("/search", methods=["GET"])
+async def search_films():
+    """
+    Search for films by name
+    ---
+    tags:
+      - search
+    parameters:
+      - name: query
+        in: query
+        type: string
+        required: true
+        description: The search query for the film name
+    responses:
+      200:
+        description: List of films matching the search query
+    """
+    query = request.args.get("query", default="", type=str)
+    if not query:
+        return jsonify([])
+
+    key = f"search:{query}"
+
+    if cache_slow.get(key):
+        data = cache_slow.get(key)
+        return jsonify(data)
+
+    data = await get_film_by_name(query)
+    cache_slow.set(key, data)
     return jsonify(data)
 
 
