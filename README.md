@@ -48,6 +48,9 @@ Start the local server to serve  scraped data and provide recommendations:
 ```bash
 python3 api/main.py
 ```
+## Model
+
+Download the model from this [link](https://huggingface.co/wolfgag/model-movie-muse/tree/main) and place in [path](/api/model)
 
 ### Endpoints
 Access the following endpoints and documentation via Swagger UI at `http://localhost:5000/api/docs`.
