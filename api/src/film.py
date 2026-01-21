@@ -3,19 +3,22 @@ import json
 import re
 import time
 
-import aiohttp
 from bs4 import BeautifulSoup
+from curl_cffi.requests import AsyncSession
 
 
-async def fetch_html(session, url):
-    try:
-        async with session.get(url, timeout=60) as response:
-            if response.status == 200:
-                return await response.text()
+async def fetch_html(url):
+    async with AsyncSession(impersonate="chrome") as session:
+        try:
+            response = await session.get(url, timeout=30)
+            if response.status_code == 200:
+                return response.text
+            else:
+                print(f"Failed with status: {response.status_code}")
+                return None
+        except Exception as e:
+            print(f"Error fetching {url}: {e}")
             return None
-    except Exception as e:
-        print(f"Error fetching {url}: {e}")
-        return None
 
 
 def extract_text(element):
@@ -108,8 +111,8 @@ async def get_film_by_id(film_id):
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
     }
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        html = await fetch_html(session, url)
+    async with AsyncSession(impersonate="chrome") as session:
+        html = await fetch_html(url)
 
         if not html:
             return None

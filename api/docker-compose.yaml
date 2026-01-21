@@ -1,5 +1,16 @@
 services:
+  reddis:
+    image: redis:7
+    container_name: muse-redis
+    networks:
+      - muse-net
+  redis-slow:
+    image: redis:7
+    container_name: muse-redis-slow
+    networks:
+      - muse-net
   api-muse:
+    container_name: muse-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -7,3 +18,9 @@ services:
       - ./model/model.pkl:/app/model/model.pkl
     ports:
       - 5000:5000
+    networks:
+      - muse-net
+
+networks:
+  muse-net:
+    driver: bridge

@@ -25,6 +25,7 @@ def clean_film_url(raw_href: Optional[str]) -> Optional[str]:
 async def fetch(session: aiohttp.ClientSession, url: str) -> Optional[str]:
     try:
         async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as r:
+            print(r)
             if r.status != 200:
                 return None
             return await r.text()

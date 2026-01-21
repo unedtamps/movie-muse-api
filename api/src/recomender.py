@@ -147,6 +147,8 @@ async def compute_ranked_by_user_id(user_id: str, k: int = 1000) -> list[str]:
     if len(raw_film_ids) < 2:
         return []
 
+    print(len(raw_film_ids))
+
     return get_live_recommendations(
         np.array(raw_film_ids), np.array(raw_ratings), np.array(raw_likes), False, N=k
     )
