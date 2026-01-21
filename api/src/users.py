@@ -1,9 +1,8 @@
-import random
-import re
 from typing import Optional
 
-import aiohttp
 from selectolax.parser import HTMLParser
+
+from src.utils import fetch_html
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0",
@@ -20,17 +19,6 @@ def clean_film_url(raw_href: Optional[str]) -> Optional[str]:
     if not raw_href or "/film/" not in raw_href:
         return None
     return raw_href[raw_href.find("/film/") :]
-
-
-async def fetch(session: aiohttp.ClientSession, url: str) -> Optional[str]:
-    try:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as r:
-            print(r)
-            if r.status != 200:
-                return None
-            return await r.text()
-    except Exception:
-        return None
 
 
 def parse_diary(html: str):
@@ -57,7 +45,7 @@ async def scrape_user(session, user_id: str, page):
 
     diary_url = f"https://letterboxd.com{user_id}films/page/{page}/"
 
-    html = await fetch(session, diary_url)
+    html = await fetch_html(session, diary_url)
 
     if not html:
         return {}
@@ -77,6 +65,6 @@ async def scrape_user(session, user_id: str, page):
     return datas
 
 
-async def get_user_diary_page(session: aiohttp.ClientSession, user_id: str, page: int):
+async def get_user_diary_page(session, user_id: str, page: int):
     formatted_uid = f"/{user_id}/"
     return await scrape_user(session, formatted_uid, page)

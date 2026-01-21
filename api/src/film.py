@@ -6,23 +6,10 @@ import time
 from bs4 import BeautifulSoup
 from curl_cffi.requests import AsyncSession
 
-
-async def fetch_html(url):
-    async with AsyncSession(impersonate="chrome") as session:
-        try:
-            response = await session.get(url, timeout=30)
-            if response.status_code == 200:
-                return response.text
-            else:
-                print(f"Failed with status: {response.status_code}")
-                return None
-        except Exception as e:
-            print(f"Error fetching {url}: {e}")
-            return None
+from src.utils import fetch_html
 
 
 def extract_text(element):
-    """Helper untuk mengambil teks bersih jika elemen ditemukan."""
     return element.get_text(strip=True) if element else None
 
 
@@ -112,8 +99,7 @@ async def get_film_by_id(film_id):
     }
 
     async with AsyncSession(impersonate="chrome") as session:
-        html = await fetch_html(url)
-
+        html = await fetch_html(session, url)
         if not html:
             return None
 

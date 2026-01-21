@@ -1,8 +1,8 @@
 import asyncio
 import pickle
 
-import aiohttp
 import numpy as np
+from curl_cffi.requests import AsyncSession
 from flask_caching import Cache
 from scipy.sparse import coo_matrix, csr_matrix
 
@@ -11,7 +11,7 @@ from src.users import get_user_diary_page
 cache = Cache(
     config={
         "CACHE_TYPE": "RedisCache",
-        "CACHE_REDIS_HOST": "localhost",
+        "CACHE_REDIS_HOST": "muse-redis",
         "CACHE_REDIS_PORT": 6379,
         "CACHE_REDIS_DB": 0,
         "CACHE_DEFAULT_TIMEOUT": 3600,  # 1 hour
@@ -21,8 +21,8 @@ cache = Cache(
 cache_slow = Cache(
     config={
         "CACHE_TYPE": "RedisCache",
-        "CACHE_REDIS_HOST": "localhost",
-        "CACHE_REDIS_PORT": 6380,
+        "CACHE_REDIS_HOST": "muse-redis-slow",
+        "CACHE_REDIS_PORT": 6379,
         "CACHE_REDIS_DB": 1,
         "CACHE_DEFAULT_TIMEOUT": 86400,  # 24 hours
     }
@@ -105,7 +105,7 @@ async def compute_ranked_by_user_id(user_id: str, k: int = 1000) -> list[str]:
     raw_likes = []
 
     page = 1
-    async with aiohttp.ClientSession(headers=HEADERS) as session:
+    async with AsyncSession(impersonate="chrome") as session:
         while True:
             tasks = [
                 get_user_diary_page(session, user_id, page + i) for i in range(BATCH)
@@ -146,8 +146,6 @@ async def compute_ranked_by_user_id(user_id: str, k: int = 1000) -> list[str]:
 
     if len(raw_film_ids) < 2:
         return []
-
-    print(len(raw_film_ids))
 
     return get_live_recommendations(
         np.array(raw_film_ids), np.array(raw_ratings), np.array(raw_likes), False, N=k

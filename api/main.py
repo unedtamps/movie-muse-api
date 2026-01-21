@@ -1,7 +1,7 @@
 import asyncio
 from logging import debug
 
-import aiohttp
+from curl_cffi.requests import AsyncSession
 from flasgger import Swagger
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -77,7 +77,8 @@ async def get_dialy_user(user_id):
         description: User diary data
     """
     page = request.args.get("page", default=1, type=int)
-    async with aiohttp.ClientSession(headers=HEADERS) as session:
+
+    async with AsyncSession(impersonate="chrome") as session:
         data = await get_user_diary_page(session, user_id, page)
     return jsonify(data)
 
@@ -208,4 +209,4 @@ async def search_films():
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=5000)
+    app.run(debug=False, host="0.0.0.0", port=5000)
