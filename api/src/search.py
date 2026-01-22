@@ -2,6 +2,8 @@ import re
 
 from playwright.async_api import async_playwright
 
+from src.film import get_film_by_id
+
 
 def upscale_poster(url):
     pattern = r"-0-(\d+)-0-(\d+)-crop"
@@ -37,21 +39,11 @@ async def run(context, query):
         for i in range(count):
             data = items.nth(i).locator("article > div").first
             await data.wait_for(state="visible")
-            if await data.is_visible():
-                await data.scroll_into_view_if_needed()
-                await page.mouse.wheel(0, 100)
-                await page.wait_for_timeout(200)
             title = await data.get_attribute("data-item-name")
             film_id = await data.get_attribute("data-item-link")
-            poster = data.locator("div > img")
             poster_film = None
-
-            if poster:
-                poster_film = await poster.get_attribute(
-                    "src",
-                )
-                poster_film = upscale_poster(poster_film)
-
+            film = await get_film_by_id(film_id)
+            poster_film = film["poster"] if film else None
             results.append(
                 {
                     "title": title.strip() if title else None,
