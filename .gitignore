@@ -4,3 +4,4 @@ archive
 .env
 model/model.pkl
 src/__pycache__
+.envrc
