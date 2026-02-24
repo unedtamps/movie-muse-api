@@ -2,5 +2,5 @@ archive
 .venv
 .venv-flask
 .env
-api/model/model.pkl
-api/src/__pycache__
+model/model.pkl
+src/__pycache__

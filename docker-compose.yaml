@@ -1,5 +1,5 @@
 services:
-  reddis:
+  redis:
     image: redis:7
     container_name: muse-redis
     networks:

@@ -3,34 +3,11 @@ import pickle
 
 import numpy as np
 from curl_cffi.requests import AsyncSession
-from flask_caching import Cache
 from scipy.sparse import coo_matrix, csr_matrix
 
 from src.users import get_user_diary_page
+from src.cache import cache
 
-cache = Cache(
-    config={
-        "CACHE_TYPE": "RedisCache",
-        "CACHE_REDIS_HOST": "muse-redis",
-        "CACHE_REDIS_PORT": 6379,
-        "CACHE_REDIS_DB": 0,
-        "CACHE_DEFAULT_TIMEOUT": 3600,  # 1 hour
-    }
-)
-
-cache_slow = Cache(
-    config={
-        "CACHE_TYPE": "RedisCache",
-        "CACHE_REDIS_HOST": "muse-redis-slow",
-        "CACHE_REDIS_PORT": 6379,
-        "CACHE_REDIS_DB": 1,
-        "CACHE_DEFAULT_TIMEOUT": 86400,  # 24 hours
-    }
-)
-
-HEADERS = {
-    "User-Agent": "Mozilla/5.0",
-}
 
 with open("model/model.pkl", "rb") as f:
     obj = pickle.load(f)

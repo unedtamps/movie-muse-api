@@ -9,18 +9,19 @@ from flask_cors import CORS
 from src.film import get_film_by_id
 from src.get_list import get_list as fetch_list
 from src.recomender import (
-    cache,
-    cache_slow,
     get_ranked_by_seeds_cached,
     get_ranked_cached,
 )
+from src.cache import cache, cache_slow
+
 from src.search import get_film_by_name
-from src.users import get_user_diary_page
+from src.users import get_user_diary_page, get_user_favorites_handler
 
 app = Flask(__name__)
 swagger = Swagger(app)
 cors = CORS(app)
-# app.config["CORS_HEADERS"] = "Content-Type"
+
+
 cache.init_app(app)
 cache_slow.init_app(app)
 
@@ -80,6 +81,33 @@ async def get_dialy_user(user_id):
 
     async with AsyncSession(impersonate="chrome") as session:
         data = await get_user_diary_page(session, user_id, page)
+    return jsonify(data)
+
+@app.route("/favorites/<string:user_id>", methods=["GET"])
+async def get_favorite_user(user_id):
+    """
+    Get user favorites 
+    ---
+    tags:
+      - Users
+    parameters:
+      - name: user_id
+        in: path
+        type: string
+        required: true
+      - name: page
+        in: query
+        type: integer
+        default: 1
+        description: Page number for pagination
+    responses:
+      200:
+        description: User diary data
+    """
+    page = request.args.get("page", default=1, type=int)
+
+    async with AsyncSession(impersonate="chrome") as session:
+        data = await get_user_favorites_handler(session, user_id)
     return jsonify(data)
 
 
@@ -155,24 +183,27 @@ async def get_list():
       - name: list_url
         in: query
         type: string
-        default: "official-top-250-narrative-feature-films"
-        description: The Letterboxd list slug or full URL
+        default: "https://letterboxd.com/official/list/top-250-films-with-the-most-fans"
+        description: The Letterboxd film from list, actor, director, watchlist etc from url
+      - name: page
+        in: query
+        type: integer
+        description: Specific page number to fetch (returns all pages if not specified)
+      - name: limit
+        in: query
+        type: integer
+        description: Maximum number of films to return
     responses:
       200:
         description: The fetched list data
     """
-    list_id = request.args.get(
-        "list_url", default="official-top-250-narrative-feature-films", type=str
+    list_url = request.args.get(
+        "list_url", default="https://letterboxd.com/official/list/top-250-films-with-the-most-fans", type=str
     )
-    if list_id.startswith("https://letterboxd.com"):
-        list_id = list_id.replace("https://letterboxd.com", "")
-        list_id = list_id.split("/")[1:4]
-    else:
-        list_id = list_id.split("/")[0:3]
+    page = request.args.get("page", default=None, type=int)
+    limit = request.args.get("limit", default=None, type=int)
 
-    list_id = "/".join(list_id)
-
-    data = await fetch_list(f"https://letterboxd.com/{list_id}")
+    data = await fetch_list(list_url, page=page, limit=limit)
     return jsonify(data)
 
 
@@ -182,7 +213,7 @@ async def search_films():
     Search for films by name
     ---
     tags:
-      - search
+      - Film
     parameters:
       - name: query
         in: query
