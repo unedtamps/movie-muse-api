@@ -1,64 +1,69 @@
 # Letterboxd Scraper & API
 
-* **User Discovery:** Scrape lists of currently popular Letterboxd curators.
-* **Data Extraction:** Pull comprehensive movie diaries and written reviews from specific profiles.
-* **REST API:** Access scraped film details and user activity through structured endpoints and get film recommendations based on user preferences and seed films.
+> ⚠️ **Unofficial API** - This is an unofficial Letterboxd API and is not affiliated with or endorsed by Letterboxd.
+>
+> 🚧 **Under Development** - This project is actively being developed. APIs and features may change without notice.
 
+A REST API for accessing Letterboxd film data, user activity, and recommendations.
 
-## Scraping 
+## Features
 
-Run the scripts in the following order to populate your database:
-
-### 1. Discover Popular Users
-
-Fetches a list of trending profiles from the Letterboxd "Popular" section.
-
-```bash
-python3 scrap/get_users.py
-```
-
-### 2. Extract User Diaries & Reviews
-
-Crawls the diaries of the users identified in the first step.
-
-```bash
-python3 scrap/user_reviews.py
-```
-
-### 3. Fetch Film Details
-
-Enriches the data by fetching specific metadata (genres, cast, etc.) for movies found in diaries.
-
-```bash
-python3 scrap/get_film_details.py
-```
-
-## 4. Fetch All Users Following (Optional)
-Crawls the followers of all users in the database to expand the user base.
-
-```bash
-python3 scrap/get_all_following.py
-```
-
+* **Film Search:** Search for films by name
+* **Film Details:** Get comprehensive film metadata (genres, cast, synopsis, ratings, etc.)
+* **User Data:** Access user diaries and favorites
+* **Lists:** Fetch films from user lists, watchlists, actor/director filmographies
+* **Recommendations:** Get film recommendations based on user preferences or seed films
 
 ## API Usage
 
-Start the local server to serve  scraped data and provide recommendations:
+Start the local server:
 
 ```bash
-python3 api/main.py
+python3 main.py
 ```
-## Model
 
-Download the model from this [link](https://huggingface.co/wolfgag/model-movie-muse/tree/main) and place in [path](/api/model)
+The API will be available at `http://localhost:5000`.
+
+### Swagger Documentation
+
+Access the interactive API documentation at `http://localhost:5000/apidocs/`.
 
 ### Endpoints
-Access the following endpoints and documentation via Swagger UI at `http://localhost:5000/api/docs`.
 
-##  Installation
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/film/<id>` | GET | Get film details by ID |
+| `/search` | GET | Search films by name |
+| `/diary/<user_id>` | GET | Get user diary entries |
+| `/favorites/<user_id>` | GET | Get user favorites |
+| `/get_list` | GET | Fetch films from a list |
+| `/recommend/personalize/<user_id>` | GET | Personalized recommendations |
+| `/recommend/seed` | POST | Recommendations based on seed films |
 
-1. Clone the repository.
+## Installation
+
+1. Clone the repository
 2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
+
+3. Set up environment variables (optional):
+```bash
+export REDIS_HOST=localhost
+export REDIS_PORT=6379
+export REDIS_SLOW_HOST=localhost
+export REDIS_SLOW_PORT=6378
+```
+
+## Docker
+
+Run with Docker Compose:
+
+```bash
+docker-compose up
+```
+
+## Model
+
+Download the recommendation model from [Hugging Face](https://huggingface.co/wolfgag/model-movie-muse/tree/main) and place it in the `/model` directory.
