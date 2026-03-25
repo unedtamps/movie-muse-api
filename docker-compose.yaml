@@ -1,16 +1,17 @@
 services:
   redis:
     image: redis:7
-    container_name: muse-redis
+    container_name: boxd-redis
     networks:
-      - muse-net
+      - boxd-net
   redis-slow:
     image: redis:7
-    container_name: muse-redis-slow
+    container_name: boxd-redis-slow
     networks:
-      - muse-net
-  api-muse:
+      - boxd-net
+  api-boxd:
     container_name: muse-api
+    image: unedotamps/letterboxd-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,8 +20,8 @@ services:
     ports:
       - 5000:5000
     networks:
-      - muse-net
+      - boxd-net
 
 networks:
-  muse-net:
+  boxd-net:
     driver: bridge
